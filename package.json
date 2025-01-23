@@ -1,0 +1,25 @@
+{
+  "name": "electronappwithreact",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "electron": "electron .",
+    "dev": "concurrently \"npm run build\" \"npm run electron\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Ramandeep",
+  "license": "ISC",
+  "description": "Electron App",
+  "dependencies": {
+    "electron": "^21.4.4",
+    "is-online": "^11.0.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "react-scripts": "^5.0.1"
+  }
+}
