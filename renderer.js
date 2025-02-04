@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     ws.addEventListener("open", () => {
       console.log("WebSocket connected.");
-      syncStatus.textContent = "Server Connected";
+      syncStatus.textContent = "WebSocket Server Connected";
       if (screenId) {
         ws.send(JSON.stringify({ screenId }));
       }
@@ -80,7 +80,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ws.addEventListener("close", () => {
       console.log("WebSocket disconnected.");
       syncStatus.textContent = "Disconnected";
-      syncStatus.style.color = "red";
 
       if (autoReconnectEnabled) {
         console.log("Reconnecting in 5 seconds...");
@@ -91,7 +90,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ws.addEventListener("error", (error) => {
       console.error("WebSocket error:", error);
       syncStatus.textContent = "Error occurred!";
-      syncStatus.style.color = "orange";
     });
   }
 
