@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Signage</title>
+  <!-- CDN for Fabric.js -->
+  <script src="https://unpkg.com/fabric@4.6.0/dist/fabric.min.js"></script>
+  <style>
+    *{
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+    }
+    h2{
+      margin-bottom: 30px;
+    }
+    .screens{
+      background-image: url('./signcastBg.jpeg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat; 
+      height: 50vh; 
+      width: 100vw; 
+      justify-content: center;  
+      align-items: center; 
+      padding: 20px;   
+    }
+    .screens.hidden{
+      display: none;
+    }
+    #screen-input, #sync-screen{
+      max-width: 500px;
+      padding: 40px;
+      width:60%;
+      background-color: rgb(241, 246, 250);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      border-radius: 20px;
+      margin: 10% auto;
+    }
+    #screen-input p,label{
+      margin-top: 20px;
+    }
+    #sync-screen{
+      text-align: center;
+    }
+    #screen-input input{
+      width:100%;
+      margin: 10px 0px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    #screen-input button{
+      display: block;
+      background-color: blue;
+      color: white;
+      padding: 10px;
+      border: none;
+      width:30%;
+      margin: 20px auto;
+      text-align: center;
+      cursor: pointer;
+    }
+    #sync-screen button{
+      background-color: green;
+      color: white;
+      padding: 10px;
+      border: none;
+      width:40%;
+      margin: 20px;
+      cursor: pointer;
+    }
+    button:hover {
+      opacity: 0.8;
+    }
+    .toggle-container {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .hidden {
+      display: none;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin-bottom: 10px;
+    }
+    .status {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    #canvas-container {
+      float: left;
+      width: 65%;
+      height: 1000px;
+      border: 1px solid #333;
+      margin-right: 20px;
+    }
+    #content-list {
+      float: right;
+      width: 30%;
+      height: 600px;
+      overflow-y: auto;
+      border: 1px solid #333;
+      padding: 10px;
+    }
+    .clearfix::after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="screens">
+    <!-- Screen ID Entry -->
+    <div id="screen-input">
+      <h2>Enter Screen ID</h2>
+      <p>Enter your Screen ID to receive content on this device.</p>
+      <label for="screenId">Screen ID:</label><br/>
+      <input type="text" id="screenId" placeholder="Enter or paste your ID" required /><br/>
+      <p id="errorMessage" class="hidden" style="color: red;">Invalid Screen ID</p>
+      <button id="validateScreen">Activate</button>
+    </div>
+
+    <!-- Sync Screen -->
+    <div id="sync-screen" class="hidden">
+      <h2>Signcast Local</h2>
+      <div class="text">
+        <p>Signcast Local is a commercial software.</p>
+        <p>You need a license to use this software.</p>
+      </div>
+      <button id="syncDevice">Sync Device</button>
+      <p>To initialize the device click Reset Data</p>
+      <p class="resetText" style="color: red;">Reset Data</p>
+      <p class="status" id="syncStatus" style="color: blue;"></p>
+    </div>
+  </div>
+
+  <!-- Display Screen : shown after sync-->
+  <div id="display-screen" class="hidden clearfix">
+    <div id="canvas-container">
+      <canvas id="canvas"></canvas>
+    </div>
+    <div id="content-list">
+      <h3>Content List</h3>
+      <ul id="contentItems"></ul>
+    </div>
+    <div>
+      <!-- Display Screen ID -->
+      <p id="screenIdDisplay" style="font-size: 18px; font-weight: bold; text-align: center;"></p>
+      <!-- Display toggle button -->
+      <div class="toggle-container">
+         <label for="autoSyncToggle">Auto-Sync:</label>
+         <input type="checkbox" id="autoSyncToggle" />
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

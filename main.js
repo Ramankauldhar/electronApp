@@ -1,135 +1,80 @@
-const { app, BrowserWindow, Tray, Menu, Notification, ipcMain, net } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu } = require('electron');
 const path = require('path');
+const axios = require('axios');
 const fs = require('fs');
-const WebSocket = require('ws');
 
-let mainWindow;
-let tray;
-let ws;
-let autoSyncEnabled = true;
-const localStoragePath = path.join(app.getPath('userData'), 'content.json');
-const websocketURL = 'ws://localhost:5000';
+let mainWindow, tray;
+const API_BASE_URL = 'http://localhost:5000'; 
+const localContentPath = path.join(app.getPath('userData'), 'local-content.json');
 
-// Created a Main Window
-const createWindow = () => {
-    mainWindow = new BrowserWindow({
-      width: 1920,
-      height: 1080,
-      webPreferences: {
-          nodeIntegration: false,  // false for security
-          contextIsolation: true,  // Required for contextBridge
-          enableRemoteModule: false, 
-          preload: path.join(__dirname, 'preload.js')  // Load the preload script fisrt
-      }
-    });
-    mainWindow.loadURL('http://localhost:3000');
-};
-
-// Check Network Connectivity 
-const isOnline = () => net.isOnline();
-
-// Connect WebSocket
-const connectWebSocket = () => {
-    if (!isOnline()) {
-        console.log('No internet connection, using offline mode');
-        return;
+// Created the main application window
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 1920,
+    height: 1080,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false
     }
-    
-    ws = new WebSocket(websocketURL);
+  });
 
-    ws.on('open', () => {
-        console.log('WebSocket Connected');
-        mainWindow.webContents.send('connection-status', 'online');
-        if (autoSyncEnabled) sendLocalContent();
-    });
+  mainWindow.loadFile('index.html');
 
-    ws.on('message', (message) => {
-        try {
-            const parsedMessage = JSON.parse(message);
-            if (isValidContent(parsedMessage)) {
-                saveToLocal(parsedMessage);
-                mainWindow.webContents.send('content-update', parsedMessage);
-            }
-        } catch (err) {
-            console.error('Error processing WebSocket message:', err);
-        }
-    });
+}
 
-    ws.on('close', () => {
-        console.log(' WebSocket Disconnected, switching to offline mode');
-        mainWindow.webContents.send('connection-status', 'offline');
-    });
-};
+// Creates a system tray icon with a context menu
+function createTray() {
+  tray = new Tray(path.join(__dirname,'icon.png'));
+  const contextMenu = Menu.buildFromTemplate([
+    { label: 'Show', click: () => mainWindow.show() },
+    { label: 'Quit', click: () => app.quit() }
+  ]);
+  tray.setToolTip('Digital Signage');
+  tray.setContextMenu(contextMenu);
+}
 
-// Validate Content
-const isValidContent = (data) => data && typeof data === 'object' && (data.text || data.images);
+// Save content data locally for offline playback
+function saveToLocal(content) {
+  fs.writeFileSync(localContentPath, JSON.stringify(content, null, 2));
+}
 
-// Save Content Locally
-const saveToLocal = (content) => {
-    fs.writeFileSync(localStoragePath, JSON.stringify(content, null, 2));
-};
+// Read content from local storage
+function loadFromLocal() {
+  if (fs.existsSync(localContentPath)) {
+    return JSON.parse(fs.readFileSync(localContentPath));
+  }
+  return [];
+}
 
-// Load Local Content for Offline Mode
-const loadFromLocal = () => {
-    if (fs.existsSync(localStoragePath)) {
-        return JSON.parse(fs.readFileSync(localStoragePath, 'utf-8'));
-    }
-    return null;
-};
-
-// Send Local Content data When Online
-const sendLocalContent = () => {
-    if (fs.existsSync(localStoragePath)) {
-        const localContent = fs.readFileSync(localStoragePath, 'utf-8');
-        ws.send(localContent);
-        console.log('Sent Local Content');
-    }
-};
-
-// IPC Event for Renderer to Get Offline Content
-ipcMain.handle('get-offline-content', () => loadFromLocal());
-
-// Show Notifications
-const showNotification = (message) => {
-    new Notification({ title: 'Digital Signage', body: message }).show();
-};
-
-// Create System Tray
-const createTray = () => {
-    tray = new Tray(path.join('icon.png'));
-    console.log('Tray Icon Path:', path.join(__dirname, 'icon.png'));
-    updateTrayMenu();
-};
-
-// Update System Tray Menu
-const updateTrayMenu = () => {
-    const contextMenu = Menu.buildFromTemplate([
-        { label: autoSyncEnabled ? 'Disable Auto-Sync' : 'Enable Auto-Sync', click: toggleAutoSync },
-        { label: 'Reconnect WebSocket', click: connectWebSocket },
-        { label: 'Quit', click: () => app.quit() },
-    ]);
-    tray.setContextMenu(contextMenu);
-};
-
-// Toggle Auto-Sync
-const toggleAutoSync = () => {
-    autoSyncEnabled = !autoSyncEnabled;
-    showNotification(autoSyncEnabled ? ' Auto-Sync Enabled' : ' Auto-Sync Disabled');
-    updateTrayMenu();
-};
-
-// App Ready Event
 app.whenReady().then(() => {
-    createWindow();
-    createTray();
-    connectWebSocket();
+  createWindow();
+  createTray();
 });
 
-// Quit App on Close
+// IPC Handlers for Renderer Process
+ipcMain.handle('validate-screen', async (_, screenId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/check-screen/${screenId}`);
+    return response.data.registered;
+  } catch (error) {
+    console.error('Screen validation error:', error.message);
+    return false;
+  }
+});
+
+ipcMain.handle('fetch-content', async (_, screenId) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/content/${screenId}`);
+    // Save the fetched content locally
+    saveToLocal(response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching content, loading local data.', error.message);
+    return loadFromLocal();
+  }
+});
+
+// Close the application gracefully
 app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit();
-});
-
-app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  if (process.platform !== 'darwin') app.quit();
 });

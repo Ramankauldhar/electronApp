@@ -14,8 +14,11 @@
   "license": "ISC",
   "description": "Electron App",
   "dependencies": {
+    "axios": "^1.7.9",
     "electron": "^21.4.4",
+    "fabric": "^6.5.4",
     "is-online": "^11.0.0",
+    "lowdb": "^7.0.1",
     "ws": "^8.18.0"
   },
   "devDependencies": {
