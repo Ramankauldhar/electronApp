@@ -9,7 +9,6 @@ The app connects to a WebSocket server for real-time content synchronization, wi
 - Real-time content updates via WebSocket.
 - Offline mode with content storage and synchronization when back online.
 - Auto-sync toggle via system tray.
-- Content management with local storage support.
 
 ## Features
 
@@ -17,7 +16,6 @@ The app connects to a WebSocket server for real-time content synchronization, wi
 - **Offline Mode**: Stores content locally and syncs it when internet access is restored.
 - **Auto-Sync Toggle**: Allows users to enable or disable auto-sync from the system tray.
 - **System Tray Support**: Provides an easy access menu for managing the app's state, including WebSocket reconnection and syncing.
-- **Notifications**: Displays system notifications for connection and sync status.
 
 ## Installation
 
@@ -38,7 +36,7 @@ The app connects to a WebSocket server for real-time content synchronization, wi
 
 1. Start the Electron app:
     ```bash
-    npm start
+    npm run electron .
     ```
 2. The app will open in a new window and connect to the WebSocket server at `ws://localhost:5000`.
 3. The tray icon will be created, and you can interact with it to enable/disable auto-sync or reconnect to the WebSocket server.
@@ -64,6 +62,16 @@ The app connects to a WebSocket server for real-time content synchronization, wi
 
 - **WebSocket not connecting**: Ensure that the WebSocket server is running and accessible at the specified URL.
 - **Offline Mode**: If you are using the app without an internet connection, the app will store content locally and sync it when the connection is restored.
+
+## ScreenShots
+![Screen Shot 2025-02-03 at 11 05 02 PM](https://github.com/user-attachments/assets/2064dbf5-2115-4890-8de5-687851777132)
+![Screen Shot 2025-02-03 at 11 05 18 PM](https://github.com/user-attachments/assets/db42f086-2e33-4ee6-8094-17506fef9137)
+![Screen Shot 2025-02-03 at 11 05 39 PM](https://github.com/user-attachments/assets/b5604e71-2fbd-4c76-b15d-a819276d5010)
+![Screen Shot 2025-02-03 at 11 05 49 PM](https://github.com/user-attachments/assets/9fa5f3b7-594d-4085-aa1a-87d6aac9688e)
+
+
+
+
 
 ## Contact
 
